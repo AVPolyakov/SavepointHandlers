@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SavepointHandlers", "SavepointHandlers\SavepointHandlers.csproj", "{A6CD7833-8388-466F-89D0-0E26E92B6693}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SavepointHandlers.SqlServer", "SavepointHandlers.SqlServer\SavepointHandlers.SqlServer.csproj", "{D441724E-F35C-4204-B605-4D01FA2E16BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SavepointHandlers.PostgreSql", "SavepointHandlers.PostgreSql\SavepointHandlers.PostgreSql.csproj", "{715C43E1-5003-4DC2-B62B-2859571C15B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SavepointHandlers.SqlServer.Tests", "SavepointHandlers.SqlServer.Tests\SavepointHandlers.SqlServer.Tests.csproj", "{56C43FC7-CE4B-4CDB-9558-687A8B7FF88F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SavepointHandlers.PostgreSql.Tests", "SavepointHandlers.PostgreSql.Tests\SavepointHandlers.PostgreSql.Tests.csproj", "{73BF0A7B-354E-44C4-B007-97DDB25F52F1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A6CD7833-8388-466F-89D0-0E26E92B6693}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6CD7833-8388-466F-89D0-0E26E92B6693}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6CD7833-8388-466F-89D0-0E26E92B6693}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6CD7833-8388-466F-89D0-0E26E92B6693}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D441724E-F35C-4204-B605-4D01FA2E16BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D441724E-F35C-4204-B605-4D01FA2E16BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D441724E-F35C-4204-B605-4D01FA2E16BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D441724E-F35C-4204-B605-4D01FA2E16BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{715C43E1-5003-4DC2-B62B-2859571C15B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{715C43E1-5003-4DC2-B62B-2859571C15B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{715C43E1-5003-4DC2-B62B-2859571C15B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{715C43E1-5003-4DC2-B62B-2859571C15B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56C43FC7-CE4B-4CDB-9558-687A8B7FF88F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56C43FC7-CE4B-4CDB-9558-687A8B7FF88F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56C43FC7-CE4B-4CDB-9558-687A8B7FF88F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56C43FC7-CE4B-4CDB-9558-687A8B7FF88F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73BF0A7B-354E-44C4-B007-97DDB25F52F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73BF0A7B-354E-44C4-B007-97DDB25F52F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73BF0A7B-354E-44C4-B007-97DDB25F52F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73BF0A7B-354E-44C4-B007-97DDB25F52F1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
