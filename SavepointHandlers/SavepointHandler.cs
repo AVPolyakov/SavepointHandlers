@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Data;
+﻿using System.Data;
 using System.Threading;
 using System.Transactions;
 
@@ -7,37 +6,37 @@ namespace SavepointHandlers
 {
     public class SavepointHandler
     {
-        private static readonly AsyncLocal<ImmutableStack<SavepointHandler>?> _savepointHandlers = new();
+        private static readonly AsyncLocal<SavepointHandler?> _current = new();
 
-        public static ImmutableStack<SavepointHandler>? SavepointHandlers
+        public static SavepointHandler? Current
         {
-            get => _savepointHandlers.Value;
-            set => _savepointHandlers.Value = value;
+            get => _current.Value;
+            set => _current.Value = value;
         }
 
         private readonly SavepointInfo? _savepointInfo;
+        private readonly SavepointHandler? _parent;
 
         public ISavepointExecutor? SavepointExecutor { private get; set; }
 
         public SavepointHandler(TransactionScopeOption scopeOption)
         {
-            var stack = _savepointHandlers.Value ?? ImmutableStack<SavepointHandler>.Empty;
+            var parent = _current.Value;
             
             if (scopeOption == TransactionScopeOption.Required)
             {
-                if (!stack.IsEmpty)
+                if (parent != null)
                 {
-                    var parent = stack.Peek();
-                    
                     var executor = parent.SavepointExecutor;
-                    
+
                     _savepointInfo = executor != null
                         ? new SavepointInfo(executor.Execute(SetSavepoint), executor)
                         : parent._savepointInfo;
                 }
             }
-            
-            _savepointHandlers.Value = stack.Push(this);
+
+            _parent = parent;
+            _current.Value = this;
         }
         
         public void Complete()
@@ -48,9 +47,7 @@ namespace SavepointHandlers
         
         public void Dispose(TransactionScope transactionScope)
         {
-            var stack = _savepointHandlers.Value;
-            if (stack != null && !stack.IsEmpty)
-                _savepointHandlers.Value = stack.Pop();
+            _current.Value = _parent;
 
             if (_savepointInfo != null)
             {
