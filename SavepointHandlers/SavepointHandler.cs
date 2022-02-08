@@ -30,7 +30,7 @@ namespace SavepointHandlers
                     var executor = parent.SavepointExecutor;
 
                     _savepointInfo = executor != null
-                        ? new SavepointInfo(executor.Execute(SetSavepoint), executor)
+                        ? new SavepointInfo(SetSavepoint(executor), executor)
                         : parent._savepointInfo;
                 }
             }
@@ -55,7 +55,7 @@ namespace SavepointHandlers
                 {
                     if (!_savepointInfo.IsRollbacked)
                     {
-                        _savepointInfo.Executor.Execute(connection => RollbackToSavepoint(connection, _savepointInfo.Name));
+                        RollbackToSavepoint(_savepointInfo.Executor, _savepointInfo.Name);
                         _savepointInfo.IsRollbacked = true;
                     }
                     transactionScope.Complete();
@@ -69,40 +69,46 @@ namespace SavepointHandlers
             public bool IsRollbacked { get; set; }
         }
         
-        private static string SetSavepoint(IDbConnection connection)
+        private static string SetSavepoint(ISavepointExecutor executor)
         {
-            var wasClosed = connection.State == ConnectionState.Closed;
-            try
+            return executor.Execute(connection =>
             {
-                if (wasClosed)
-                    connection.Open();
+                var wasClosed = connection.State == ConnectionState.Closed;
+                try
+                {
+                    if (wasClosed)
+                        connection.Open();
 
-                using (var command = connection.CreateCommand())
-                    return ISavepointAdapter.Current.SetSavepoint(command);
-            }
-            finally
-            {
-                if (wasClosed)
-                    connection.Close();
-            }
+                    using (var command = connection.CreateCommand())
+                        return ISavepointAdapter.Current.SetSavepoint(command);
+                }
+                finally
+                {
+                    if (wasClosed)
+                        connection.Close();
+                }
+            });
         }
 
-        private static void RollbackToSavepoint(IDbConnection connection, string savePointName)
+        private static void RollbackToSavepoint(ISavepointExecutor executor, string savePointName)
         {
-            var wasClosed = connection.State == ConnectionState.Closed;
-            try
+            executor.Execute(connection =>
             {
-                if (wasClosed)
-                    connection.Open();
+                var wasClosed = connection.State == ConnectionState.Closed;
+                try
+                {
+                    if (wasClosed)
+                        connection.Open();
 
-                using (var command = connection.CreateCommand()) 
-                    ISavepointAdapter.Current.RollbackToSavepoint(command, savePointName);
-            }
-            finally
-            {
-                if (wasClosed)
-                    connection.Close();
-            }
+                    using (var command = connection.CreateCommand())
+                        ISavepointAdapter.Current.RollbackToSavepoint(command, savePointName);
+                }
+                finally
+                {
+                    if (wasClosed)
+                        connection.Close();
+                }
+            });
         }
     }
 }
