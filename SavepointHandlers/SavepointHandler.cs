@@ -14,7 +14,7 @@ namespace SavepointHandlers
             set => _current.Value = value;
         }
 
-        private readonly SavepointInfo? _savepointInfo;
+        private readonly SavepointScopeInfo? _savepointScopeInfo;
         private readonly SavepointHandler? _parent;
 
         public ISavepointExecutor? SavepointExecutor { private get; set; }
@@ -27,11 +27,13 @@ namespace SavepointHandlers
             {
                 if (parent != null)
                 {
-                    var executor = parent.SavepointExecutor;
+                    var parentExecutor = parent.SavepointExecutor;
 
-                    _savepointInfo = executor != null
-                        ? new SavepointInfo(SetSavepoint(executor), executor)
-                        : parent._savepointInfo;
+                    _savepointScopeInfo = parentExecutor != null 
+                        ? new SavepointScopeInfo(new SavepointInfo(SetSavepoint(parentExecutor), parentExecutor)) 
+                        : parent._savepointScopeInfo != null 
+                            ? new SavepointScopeInfo(parent._savepointScopeInfo.SavepointInfo) 
+                            : null;
                 }
             }
 
@@ -41,32 +43,29 @@ namespace SavepointHandlers
         
         public void Complete()
         {
-            if (_savepointInfo != null)
-                _savepointInfo.IsCompleted = true;
+            if (_savepointScopeInfo != null)
+                _savepointScopeInfo.IsCompleted = true;
         }
         
         public void Dispose(TransactionScope transactionScope)
         {
             _current.Value = _parent;
 
-            if (_savepointInfo != null)
+            if (_savepointScopeInfo != null)
             {
-                if (!_savepointInfo.IsCompleted)
+                if (!_savepointScopeInfo.IsCompleted)
                 {
-                    if (!_savepointInfo.IsRollbacked)
-                    {
-                        RollbackToSavepoint(_savepointInfo.Executor, _savepointInfo.Name);
-                        _savepointInfo.IsRollbacked = true;
-                    }
+                    RollbackToSavepoint(_savepointScopeInfo.SavepointInfo.Executor, _savepointScopeInfo.SavepointInfo.Name);
                     transactionScope.Complete();
                 }
             }
         }
         
-        private record SavepointInfo(string Name, ISavepointExecutor Executor)
+        private record SavepointInfo(string Name, ISavepointExecutor Executor);
+
+        private record SavepointScopeInfo(SavepointInfo SavepointInfo)
         {
             public bool IsCompleted { get; set; }
-            public bool IsRollbacked { get; set; }
         }
         
         private static string SetSavepoint(ISavepointExecutor executor)
