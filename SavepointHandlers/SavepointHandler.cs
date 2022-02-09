@@ -30,9 +30,9 @@ namespace SavepointHandlers
                     var parentExecutor = parent.SavepointExecutor;
 
                     _savepointScopeInfo = parentExecutor != null 
-                        ? new SavepointScopeInfo(new SavepointInfo(SetSavepoint(parentExecutor), parentExecutor)) 
+                        ? new SavepointScopeInfo(SetSavepoint(parentExecutor), parentExecutor) 
                         : parent._savepointScopeInfo != null 
-                            ? new SavepointScopeInfo(parent._savepointScopeInfo.SavepointInfo) 
+                            ? new SavepointScopeInfo(parent._savepointScopeInfo.Name, parent._savepointScopeInfo.Executor) 
                             : null;
                 }
             }
@@ -55,15 +55,13 @@ namespace SavepointHandlers
             {
                 if (!_savepointScopeInfo.IsCompleted)
                 {
-                    RollbackToSavepoint(_savepointScopeInfo.SavepointInfo.Executor, _savepointScopeInfo.SavepointInfo.Name);
+                    RollbackToSavepoint(_savepointScopeInfo.Executor, _savepointScopeInfo.Name);
                     transactionScope.Complete();
                 }
             }
         }
         
-        private record SavepointInfo(string Name, ISavepointExecutor Executor);
-
-        private record SavepointScopeInfo(SavepointInfo SavepointInfo)
+        private record SavepointScopeInfo(string Name, ISavepointExecutor Executor)
         {
             public bool IsCompleted { get; set; }
         }
