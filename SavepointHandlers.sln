@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SavepointHandlers.SqlServer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SavepointHandlers.PostgreSql.Tests", "SavepointHandlers.PostgreSql.Tests\SavepointHandlers.PostgreSql.Tests.csproj", "{73BF0A7B-354E-44C4-B007-97DDB25F52F1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SavepointLocalTransactionScopeObservers", "SavepointLocalTransactionScopeObservers\SavepointLocalTransactionScopeObservers.csproj", "{04EC49C8-C3BC-4C77-89A1-66A874660473}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalTransactionScopes", "LocalTransactionScopes\LocalTransactionScopes.csproj", "{D22A91A1-7A2E-420F-8862-74F23540D17F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +40,13 @@ Global
 		{73BF0A7B-354E-44C4-B007-97DDB25F52F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73BF0A7B-354E-44C4-B007-97DDB25F52F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{73BF0A7B-354E-44C4-B007-97DDB25F52F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04EC49C8-C3BC-4C77-89A1-66A874660473}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04EC49C8-C3BC-4C77-89A1-66A874660473}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04EC49C8-C3BC-4C77-89A1-66A874660473}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04EC49C8-C3BC-4C77-89A1-66A874660473}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D22A91A1-7A2E-420F-8862-74F23540D17F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D22A91A1-7A2E-420F-8862-74F23540D17F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D22A91A1-7A2E-420F-8862-74F23540D17F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D22A91A1-7A2E-420F-8862-74F23540D17F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

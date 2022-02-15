@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Dapper.Addition;
+using LocalTransactionScopes;
+using SavepointLocalTransactionScopeObservers;
 using Xunit;
 
 namespace SavepointHandlers.SqlServer.Tests
@@ -16,7 +18,7 @@ namespace SavepointHandlers.SqlServer.Tests
         {
             _db = databaseFixture.Db;
 
-            _transactionScope = new LocalTransactionScope { SavepointExecutor = databaseFixture.SavepointExecutor };
+            _transactionScope = LocalTransactionScopeFactory.Create(databaseFixture.SavepointExecutor);
 
             AmbientTransactionData = AmbientTransactionData.Current;
         }
@@ -44,7 +46,7 @@ namespace SavepointHandlers.SqlServer.Tests
 
             AmbientTransactionData.Current = fixture.AmbientTransactionData;
             
-            _transactionScope = new LocalTransactionScope {SavepointExecutor = databaseFixture.SavepointExecutor};
+            _transactionScope = LocalTransactionScopeFactory.Create(databaseFixture.SavepointExecutor);
         }
         
         public void Dispose() => _transactionScope.Dispose();

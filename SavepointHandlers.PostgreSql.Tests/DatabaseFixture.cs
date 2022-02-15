@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Transactions;
 using Dapper;
 using Dapper.Addition;
 using Dapper.Addition.PostgreSql;
-using Dapper.Addition.PostgreSql.Tests;
 using DbUp;
 using Npgsql;
+using SavepointLocalTransactionScopeObservers;
 using Xunit;
 
 namespace SavepointHandlers.PostgreSql.Tests
@@ -15,13 +16,14 @@ namespace SavepointHandlers.PostgreSql.Tests
     {
         public IDbExecutor Db { get; }
         public ISavepointExecutor SavepointExecutor { get; }
-
+        
         public DatabaseFixture()
         {
             Sql.MappingCheckEnabled = true;
             ISqlAdapter.Current = new PostgreSqlAdapter();
             ISavepointAdapter.Current = new PostgreSqlSavepointAdapter();
             DefaultTypeMap.MatchNamesWithUnderscores = true;
+            SavepointLocalTransactionScopeObserver.Subscribe();
             
             Db = new DbExecutor(ConnectionString);
             SavepointExecutor = new SavepointExecutor(ConnectionString);

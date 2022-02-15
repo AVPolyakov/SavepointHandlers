@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Dapper.Addition;
 using Dapper.Addition.PostgreSql.Tests;
+using LocalTransactionScopes;
+using SavepointLocalTransactionScopeObservers;
 using Xunit;
 
 namespace SavepointHandlers.PostgreSql.Tests
@@ -20,7 +22,7 @@ namespace SavepointHandlers.PostgreSql.Tests
         [Fact]
         public async Task Nested_Rollback_Success()
         {
-            using (new LocalTransactionScope { SavepointExecutor = _databaseFixture.SavepointExecutor })
+            using (LocalTransactionScopeFactory.Create(_databaseFixture.SavepointExecutor))
             {
                 await _db.InsertAsync(new Client {Id = 2, Name = "Name1"});
                 
@@ -43,7 +45,7 @@ namespace SavepointHandlers.PostgreSql.Tests
         [Fact]
         public async Task Nested_Complete_Success()
         {
-            using (new LocalTransactionScope { SavepointExecutor = _databaseFixture.SavepointExecutor })
+            using (LocalTransactionScopeFactory.Create(_databaseFixture.SavepointExecutor))
             {
                 await _db.InsertAsync(new Client {Id = 2, Name = "Name1"});
                 

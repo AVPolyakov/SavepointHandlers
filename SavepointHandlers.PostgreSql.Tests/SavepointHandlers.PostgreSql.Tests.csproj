@@ -36,6 +36,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\SavepointHandlers.PostgreSql\SavepointHandlers.PostgreSql.csproj" />
+        <ProjectReference Include="..\SavepointLocalTransactionScopeObservers\SavepointLocalTransactionScopeObservers.csproj" />
     </ItemGroup>
 
 </Project>

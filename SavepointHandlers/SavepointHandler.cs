@@ -14,13 +14,26 @@ namespace SavepointHandlers
             set => _current.Value = value;
         }
 
+        public static ISavepointExecutor? CurrentSavepointExecutor
+        {
+            set
+            {
+                var current = Current;
+                if (current != null) 
+                    current.SavepointExecutor = value;
+            }
+        }
+
+        private readonly TransactionScope _transactionScope;
         private readonly SavepointScopeInfo? _savepointScopeInfo;
         private readonly SavepointHandler? _parent;
-
+        
         public ISavepointExecutor? SavepointExecutor { private get; set; }
 
-        public SavepointHandler(TransactionScopeOption scopeOption)
+        public SavepointHandler(TransactionScopeOption scopeOption, TransactionScope transactionScope)
         {
+            _transactionScope = transactionScope;
+            
             var parent = _current.Value;
             
             if (scopeOption == TransactionScopeOption.Required)
@@ -47,7 +60,7 @@ namespace SavepointHandlers
                 _savepointScopeInfo.IsCompleted = true;
         }
         
-        public void Dispose(TransactionScope transactionScope)
+        public void Dispose()
         {
             _current.Value = _parent;
 
@@ -56,7 +69,7 @@ namespace SavepointHandlers
                 if (!_savepointScopeInfo.IsCompleted)
                 {
                     RollbackToSavepoint(_savepointScopeInfo.Executor, _savepointScopeInfo.Name);
-                    transactionScope.Complete();
+                    _transactionScope.Complete();
                 }
             }
         }

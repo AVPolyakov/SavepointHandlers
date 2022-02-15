@@ -14,9 +14,9 @@
 
 # TransactionScope и savepoints
 
-Если у родительского скоупа свойство `SavepointExecutor` не равно `null`, то вложенный скоуп создает точку сохранения. Если вложенный скоуп завершается без `Complete`, то происходит откат до точки сохранения.
+Если у родительского скоупа параметр `savepointExecutor` не равен `null`, то вложенный скоуп создает точку сохранения. Если вложенный скоуп завершается без `Complete`, то происходит откат до точки сохранения.
 ```csharp
-using (new LocalTransactionScope { SavepointExecutor = savepointExecutor })
+using (LocalTransactionScopeFactory.Create(savepointExecutor))
 {
     ...
     using (new LocalTransactionScope()) //создается точка сохранения SP1

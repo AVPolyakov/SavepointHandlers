@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Dapper.Addition;
 using Dapper.Addition.PostgreSql.Tests;
+using LocalTransactionScopes;
+using SavepointLocalTransactionScopeObservers;
 using Xunit;
 
 namespace SavepointHandlers.PostgreSql.Tests
@@ -17,7 +19,7 @@ namespace SavepointHandlers.PostgreSql.Tests
         {
             _db = databaseFixture.Db;
 
-            _transactionScope = new LocalTransactionScope { SavepointExecutor = databaseFixture.SavepointExecutor };
+            _transactionScope = LocalTransactionScopeFactory.Create(databaseFixture.SavepointExecutor);
 
             AmbientTransactionData = AmbientTransactionData.Current;
         }
@@ -45,7 +47,7 @@ namespace SavepointHandlers.PostgreSql.Tests
 
             AmbientTransactionData.Current = fixture.AmbientTransactionData;
             
-            _transactionScope = new LocalTransactionScope {SavepointExecutor = databaseFixture.SavepointExecutor};
+            _transactionScope = LocalTransactionScopeFactory.Create(databaseFixture.SavepointExecutor);
         }
         
         public void Dispose() => _transactionScope.Dispose();

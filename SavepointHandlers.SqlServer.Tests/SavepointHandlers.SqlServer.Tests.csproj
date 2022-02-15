@@ -36,6 +36,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\SavepointHandlers.SqlServer\SavepointHandlers.SqlServer.csproj" />
+      <ProjectReference Include="..\SavepointLocalTransactionScopeObservers\SavepointLocalTransactionScopeObservers.csproj" />
     </ItemGroup>
 
 </Project>
