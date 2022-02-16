@@ -1,10 +1,12 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Threading;
 using System.Transactions;
+using LocalTransactionScopes;
 
 namespace SavepointHandlers
 {
-    public class SavepointHandler
+    public class SavepointHandler: ILocalTransactionScopeObserver
     {
         private static readonly AsyncLocal<SavepointHandler?> _current = new();
 
@@ -14,16 +16,11 @@ namespace SavepointHandlers
             set => _current.Value = value;
         }
 
-        public static ISavepointExecutor? CurrentSavepointExecutor
-        {
-            set
-            {
-                var current = Current;
-                if (current != null) 
-                    current.SavepointExecutor = value;
-            }
-        }
+        private static readonly Func<TransactionScopeOption, TransactionScope, ILocalTransactionScopeObserver> _transactionScopeObserverFunc = 
+            (scopeOption, scope) => new SavepointHandler(scopeOption, scope);
 
+        public static void SubscribeToLocalTransactionScope() => LocalTransactionScope.TryAddObserver(_transactionScopeObserverFunc);
+        
         private readonly TransactionScope _transactionScope;
         private readonly SavepointScopeInfo? _savepointScopeInfo;
         private readonly SavepointHandler? _parent;
@@ -54,13 +51,13 @@ namespace SavepointHandlers
             _current.Value = this;
         }
         
-        public void Complete()
+        public void OnComplete()
         {
             if (_savepointScopeInfo != null)
                 _savepointScopeInfo.IsCompleted = true;
         }
         
-        public void Dispose()
+        public void OnDispose()
         {
             _current.Value = _parent;
 

@@ -6,4 +6,8 @@
         <TreatWarningsAsErrors />
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\LocalTransactionScopes\LocalTransactionScopes.csproj" />
+    </ItemGroup>
+
 </Project>

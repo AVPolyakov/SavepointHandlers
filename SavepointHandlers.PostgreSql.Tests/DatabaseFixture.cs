@@ -7,7 +7,6 @@ using Dapper.Addition;
 using Dapper.Addition.PostgreSql;
 using DbUp;
 using Npgsql;
-using SavepointLocalTransactionScopeObservers;
 using Xunit;
 
 namespace SavepointHandlers.PostgreSql.Tests
@@ -23,7 +22,7 @@ namespace SavepointHandlers.PostgreSql.Tests
             ISqlAdapter.Current = new PostgreSqlAdapter();
             ISavepointAdapter.Current = new PostgreSqlSavepointAdapter();
             DefaultTypeMap.MatchNamesWithUnderscores = true;
-            SavepointLocalTransactionScopeObserver.Subscribe();
+            SavepointHandler.SubscribeToLocalTransactionScope();
             
             Db = new DbExecutor(ConnectionString);
             SavepointExecutor = new SavepointExecutor(ConnectionString);

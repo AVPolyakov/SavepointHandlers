@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Dapper.Addition;
 using LocalTransactionScopes;
-using SavepointLocalTransactionScopeObservers;
 using Xunit;
 
 namespace SavepointHandlers.SqlServer.Tests

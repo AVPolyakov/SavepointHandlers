@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Dapper.Addition;
 using Dapper.Addition.SqlServer;
 using DbUp;
-using SavepointLocalTransactionScopeObservers;
 using Xunit;
 
 namespace SavepointHandlers.SqlServer.Tests
@@ -20,7 +19,7 @@ namespace SavepointHandlers.SqlServer.Tests
             Sql.MappingCheckEnabled = true;
             ISqlAdapter.Current = new SqlServerAdapter();
             ISavepointAdapter.Current = new SqlServerSavepointAdapter();
-            SavepointLocalTransactionScopeObserver.Subscribe();
+            SavepointHandler.SubscribeToLocalTransactionScope();
             
             Db = new DbExecutor(ConnectionString);
             SavepointExecutor = new SavepointExecutor(ConnectionString);

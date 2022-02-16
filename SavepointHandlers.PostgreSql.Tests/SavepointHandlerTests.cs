@@ -2,7 +2,6 @@
 using Dapper.Addition;
 using Dapper.Addition.PostgreSql.Tests;
 using LocalTransactionScopes;
-using SavepointLocalTransactionScopeObservers;
 using Xunit;
 
 namespace SavepointHandlers.PostgreSql.Tests
