@@ -1,4 +1,5 @@
-﻿using System.Transactions;
+﻿#nullable enable
+using System.Transactions;
 using LocalTransactionScopes;
 
 namespace SavepointHandlers;

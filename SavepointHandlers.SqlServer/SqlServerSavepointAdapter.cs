@@ -1,6 +1,6 @@
+#nullable enable
 using System;
 using System.Data;
-using SavepointHandlers;
 
 namespace SavepointHandlers.SqlServer
 {

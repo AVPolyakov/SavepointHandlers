@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+﻿#nullable enable
 using System.Transactions;
 
 namespace SavepointHandlers
