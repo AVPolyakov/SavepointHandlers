@@ -1,12 +1,10 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 using System.Threading;
 using System.Transactions;
-using LocalTransactionScopes;
 
 namespace SavepointHandlers
 {
-    public class SavepointHandler: ILocalTransactionScopeObserver
+    public class SavepointHandler
     {
         private static readonly AsyncLocal<SavepointHandler?> _current = new();
 
@@ -16,57 +14,58 @@ namespace SavepointHandlers
             set => _current.Value = value;
         }
 
-        private static readonly Func<TransactionScopeOption, TransactionScope, ILocalTransactionScopeObserver> _transactionScopeObserverFunc = 
-            (scopeOption, scope) => new SavepointHandler(scopeOption, scope);
-
-        public static void SubscribeToLocalTransactionScope() => LocalTransactionScope.TryAddObserver(_transactionScopeObserverFunc);
-        
-        private readonly TransactionScope _transactionScope;
         private readonly SavepointScopeInfo? _savepointScopeInfo;
         private readonly SavepointHandler? _parent;
         
         public ISavepointExecutor? SavepointExecutor { private get; set; }
 
-        public SavepointHandler(TransactionScopeOption scopeOption, TransactionScope transactionScope)
+        private SavepointHandler(SavepointHandler? parent, SavepointScopeInfo? savepointScopeInfo)
         {
-            _transactionScope = transactionScope;
-            
-            var parent = _current.Value;
-            
+            _parent = parent;
+            _savepointScopeInfo = savepointScopeInfo;
+        }
+
+        public static void CreateCurrent(TransactionScopeOption scopeOption)
+        {
+            var parent = Current;
+            Current = new SavepointHandler(parent, GetSavepointScopeInfo(scopeOption, parent));
+        }
+
+        private static SavepointScopeInfo? GetSavepointScopeInfo(TransactionScopeOption scopeOption, SavepointHandler? parent)
+        {
             if (scopeOption == TransactionScopeOption.Required)
             {
                 if (parent != null)
                 {
                     var parentExecutor = parent.SavepointExecutor;
 
-                    _savepointScopeInfo = parentExecutor != null 
-                        ? new SavepointScopeInfo(SetSavepoint(parentExecutor), parentExecutor) 
-                        : parent._savepointScopeInfo != null 
-                            ? new SavepointScopeInfo(parent._savepointScopeInfo.Name, parent._savepointScopeInfo.Executor) 
+                    return parentExecutor != null
+                        ? new SavepointScopeInfo(SetSavepoint(parentExecutor), parentExecutor)
+                        : parent._savepointScopeInfo != null
+                            ? new SavepointScopeInfo(parent._savepointScopeInfo.Name, parent._savepointScopeInfo.Executor)
                             : null;
                 }
             }
-
-            _parent = parent;
-            _current.Value = this;
+                
+            return null;
         }
         
-        public void OnComplete()
+        public void Complete()
         {
             if (_savepointScopeInfo != null)
                 _savepointScopeInfo.IsCompleted = true;
         }
         
-        public void OnDispose()
+        public void Dispose(TransactionScope transactionScope)
         {
-            _current.Value = _parent;
+            Current = _parent;
 
             if (_savepointScopeInfo != null)
             {
                 if (!_savepointScopeInfo.IsCompleted)
                 {
                     RollbackToSavepoint(_savepointScopeInfo.Executor, _savepointScopeInfo.Name);
-                    _transactionScope.Complete();
+                    transactionScope.Complete();
                 }
             }
         }

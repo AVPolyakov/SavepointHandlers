@@ -13,7 +13,7 @@ public static class LocalTransactionScopeFactory
 
         if (currentSavepointHandler == null)
             throw new Exception($"{nameof(SavepointHandler)} is not subscribed to {nameof(LocalTransactionScope)}. " +
-                $"Invoke method {nameof(SavepointHandler)}.{nameof(SavepointHandler.SubscribeToLocalTransactionScope)} at application start.");
+                $"Invoke method {nameof(SavepointHandler)}.{nameof(LocalTransactionScopeObserver.Subscribe)} at application start.");
         
         currentSavepointHandler.SavepointExecutor = savepointExecutor;
         

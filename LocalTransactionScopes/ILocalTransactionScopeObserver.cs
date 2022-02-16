@@ -1,7 +1,12 @@
-﻿namespace LocalTransactionScopes;
+﻿using System.Transactions;
+
+namespace LocalTransactionScopes;
 
 public interface ILocalTransactionScopeObserver
 {
-    void OnComplete();
-    void OnDispose();
+    void OnCreated(TransactionScopeOption scopeOption, TransactionScope transactionScope);
+    
+    void OnComplete(TransactionScope transactionScope);
+    
+    void OnDispose(TransactionScope transactionScope);
 }

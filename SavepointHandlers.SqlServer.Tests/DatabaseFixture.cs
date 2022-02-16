@@ -19,7 +19,7 @@ namespace SavepointHandlers.SqlServer.Tests
             Sql.MappingCheckEnabled = true;
             ISqlAdapter.Current = new SqlServerAdapter();
             ISavepointAdapter.Current = new SqlServerSavepointAdapter();
-            SavepointHandler.SubscribeToLocalTransactionScope();
+            LocalTransactionScopeObserver.Subscribe();
             
             Db = new DbExecutor(ConnectionString);
             SavepointExecutor = new SavepointExecutor(ConnectionString);

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Transactions;
 using IsolationLevel = System.Transactions.IsolationLevel;
 
@@ -9,13 +7,12 @@ namespace LocalTransactionScopes
 {
     public sealed class LocalTransactionScope: IDisposable
     {
-        private static readonly ConcurrentDictionary<Func<TransactionScopeOption, TransactionScope, ILocalTransactionScopeObserver>, object?> _observerFuncs = new();
+        private static readonly ConcurrentDictionary<ILocalTransactionScopeObserver, object?> _observers = new();
 
-        public static void TryAddObserver(Func<TransactionScopeOption, TransactionScope, ILocalTransactionScopeObserver> observerFunc) 
-            => _observerFuncs.TryAdd(observerFunc, null);
+        public static void TryAddObserver(ILocalTransactionScopeObserver observer) 
+            => _observers.TryAdd(observer, null);
 
         private readonly TransactionScope _transactionScope;
-        private readonly List<ILocalTransactionScopeObserver> _observers;
         
         public LocalTransactionScope(TransactionScopeOption scopeOption = TransactionScopeOption.Required)
         {
@@ -24,21 +21,22 @@ namespace LocalTransactionScopes
                 new TransactionOptions{IsolationLevel = IsolationLevel.ReadCommitted},
                 TransactionScopeAsyncFlowOption.Enabled);
             
-            _observers = _observerFuncs.Keys.Select(observerFunc => observerFunc(scopeOption, _transactionScope)).ToList();
+            foreach (var observer in _observers.Keys)
+                observer.OnCreated(scopeOption, _transactionScope);
         }
         
         public void Complete()
         {
-            foreach (var observer in _observers)
-                observer.OnComplete();
+            foreach (var observer in _observers.Keys)
+                observer.OnComplete(_transactionScope);
             
             _transactionScope.Complete();
         }
 
         public void Dispose()
         {
-            foreach (var observer in _observers)
-                observer.OnDispose();
+            foreach (var observer in _observers.Keys)
+                observer.OnDispose(_transactionScope);
 
             _transactionScope.Dispose();
         }

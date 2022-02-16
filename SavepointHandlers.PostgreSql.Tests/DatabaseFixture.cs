@@ -22,7 +22,7 @@ namespace SavepointHandlers.PostgreSql.Tests
             ISqlAdapter.Current = new PostgreSqlAdapter();
             ISavepointAdapter.Current = new PostgreSqlSavepointAdapter();
             DefaultTypeMap.MatchNamesWithUnderscores = true;
-            SavepointHandler.SubscribeToLocalTransactionScope();
+            LocalTransactionScopeObserver.Subscribe();
             
             Db = new DbExecutor(ConnectionString);
             SavepointExecutor = new SavepointExecutor(ConnectionString);
