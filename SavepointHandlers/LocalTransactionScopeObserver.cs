@@ -11,7 +11,7 @@ public class LocalTransactionScopeObserver : ILocalTransactionScopeObserver
         
     public void OnCreated(TransactionScopeOption scopeOption, TransactionScope transactionScope)
     {
-        SavepointHandler.CreateCurrent(scopeOption);
+        _ = new SavepointHandler(scopeOption);
     }
 
     public void OnComplete(TransactionScope transactionScope)

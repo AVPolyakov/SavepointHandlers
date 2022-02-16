@@ -19,16 +19,14 @@ namespace SavepointHandlers
         
         public ISavepointExecutor? SavepointExecutor { private get; set; }
 
-        private SavepointHandler(SavepointHandler? parent, SavepointScopeInfo? savepointScopeInfo)
-        {
-            _parent = parent;
-            _savepointScopeInfo = savepointScopeInfo;
-        }
-
-        public static void CreateCurrent(TransactionScopeOption scopeOption)
+        public SavepointHandler(TransactionScopeOption scopeOption)
         {
             var parent = Current;
-            Current = new SavepointHandler(parent, GetSavepointScopeInfo(scopeOption, parent));
+            
+            _parent = parent;
+            _savepointScopeInfo = GetSavepointScopeInfo(scopeOption, parent);
+
+            Current = this;
         }
 
         private static SavepointScopeInfo? GetSavepointScopeInfo(TransactionScopeOption scopeOption, SavepointHandler? parent)
