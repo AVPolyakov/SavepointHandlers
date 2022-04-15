@@ -24,7 +24,7 @@ namespace SavepointHandlers.SqlServer
 
         public void RollbackToSavepoint(IDbCommand command, string savePointName)
         {
-            command.CommandText = "ROLLBACK TRANSACTION @SavePointName";
+            command.CommandText = "ROLLBACK TRANSACTION @SavePointName SAVE TRANSACTION @SavePointName";
             
             var parameter = command.CreateParameter();
             parameter.ParameterName = "@SavePointName";
