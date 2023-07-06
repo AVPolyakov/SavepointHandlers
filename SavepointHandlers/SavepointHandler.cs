@@ -16,7 +16,6 @@ namespace SavepointHandlers
 
         private readonly SavepointScopeInfo? _savepointScopeInfo;
         private readonly SavepointHandler? _parent;
-        private bool _isDisposed;
 
         public ISavepointExecutor? SavepointExecutor { private get; set; }
 
@@ -66,17 +65,7 @@ namespace SavepointHandlers
                 }
             }
             
-            if (Current == this)
-            {
-                var parent = _parent;
-                while (parent != null && parent._isDisposed)
-                {
-                    parent = parent._parent;
-                }
-                Current = _parent;
-            }
-
-            _isDisposed = true;
+            Current = _parent;
         }
         
         private record SavepointScopeInfo(string Name, ISavepointExecutor Executor)

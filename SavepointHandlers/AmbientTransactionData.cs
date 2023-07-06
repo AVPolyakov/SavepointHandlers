@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Transactions;
+﻿using System.Transactions;
 
 namespace SavepointHandlers
 {
