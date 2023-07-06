@@ -2,7 +2,7 @@
 using System.Transactions;
 using IsolationLevel = System.Transactions.IsolationLevel;
 
-namespace SavepointHandlers.PostgreSql.Tests
+namespace SavepointHandlers
 {
     public sealed class LocalTransactionScope: IDisposable
     {
