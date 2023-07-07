@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Dapper.Addition;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace SavepointHandlers.SqlServer.Tests
@@ -41,6 +42,8 @@ namespace SavepointHandlers.SqlServer.Tests
             DatabaseFixture databaseFixture)
         {
             _db = databaseFixture.Db;
+            
+            var clientService = databaseFixture.Host.Services.GetRequiredService<IClientService>();
 
             AmbientTransactionData.Current = fixture.AmbientTransactionData;
             

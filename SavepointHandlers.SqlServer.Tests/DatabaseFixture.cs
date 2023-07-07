@@ -6,11 +6,15 @@ using Dapper.Addition;
 using Dapper.Addition.SqlServer;
 using DbUp;
 using Xunit;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace SavepointHandlers.SqlServer.Tests
 {
-    public class DatabaseFixture: IAsyncLifetime
+    public sealed class DatabaseFixture: IAsyncLifetime, IDisposable
     {
+        public IHost Host { get; }
+
         public IDbExecutor Db { get; }
         public ISavepointExecutor SavepointExecutor { get; }
 
@@ -22,6 +26,12 @@ namespace SavepointHandlers.SqlServer.Tests
             
             Db = new DbExecutor(ConnectionString);
             SavepointExecutor = new SavepointExecutor(ConnectionString);
+            
+            var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
+
+            builder.Services.AddSingleton<IClientService, ClientService>();
+
+            Host = builder.Build();
         }
         
         private static string ConnectionString => new SqlConnectionStringBuilder(DefaultConnectionString) {InitialCatalog = DatabaseName}.ConnectionString;
@@ -55,5 +65,7 @@ CREATE DATABASE [{DatabaseName}]
         }
 
         public Task DisposeAsync() => Task.CompletedTask;
+
+        public void Dispose() => Host.Dispose();
     }
 }
