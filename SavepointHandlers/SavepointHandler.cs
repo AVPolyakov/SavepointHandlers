@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Threading;
 using System.Transactions;
+using static SavepointHandlers.LocalTransactionScope;
 
 namespace SavepointHandlers
 {
@@ -75,7 +76,7 @@ namespace SavepointHandlers
         
         private static string SetSavepoint(ISavepointExecutor executor)
         {
-            return executor.Execute(connection =>
+            var savepointName = executor.Execute(connection =>
             {
                 var wasClosed = connection.State == ConnectionState.Closed;
                 try
@@ -92,9 +93,14 @@ namespace SavepointHandlers
                         connection.Close();
                 }
             });
+            
+            foreach (var transactionObserver in TransactionObservers.Keys)
+                transactionObserver.OnSetSavepoint(savepointName);
+
+            return savepointName;
         }
 
-        private static void RollbackToSavepoint(ISavepointExecutor executor, string savePointName)
+        private static void RollbackToSavepoint(ISavepointExecutor executor, string savepointName)
         {
             executor.Execute(connection =>
             {
@@ -105,7 +111,7 @@ namespace SavepointHandlers
                         connection.Open();
 
                     using (var command = connection.CreateCommand())
-                        ISavepointAdapter.Current.RollbackToSavepoint(command, savePointName);
+                        ISavepointAdapter.Current.RollbackToSavepoint(command, savepointName);
                 }
                 finally
                 {
@@ -113,6 +119,9 @@ namespace SavepointHandlers
                         connection.Close();
                 }
             });
+            
+            foreach (var transactionObserver in TransactionObservers.Keys)
+                transactionObserver.OnRollbackToSavepoint(savepointName);
         }
     }
 }

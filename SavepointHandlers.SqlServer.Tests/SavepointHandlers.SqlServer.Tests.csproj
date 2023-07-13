@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+        <PackageReference Include="System.Collections.Immutable" Version="7.0.0" />
         <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
         <PackageReference Include="dbup-core" Version="4.5.0" />
         <PackageReference Include="dbup-sqlserver" Version="4.5.0" />

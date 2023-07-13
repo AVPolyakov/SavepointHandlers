@@ -9,22 +9,28 @@ namespace SavepointHandlers.SqlServer.Tests
     [Collection(nameof(FixtureCollection))]
     public class TestFixture : IDisposable, IAsyncLifetime 
     {
+        private readonly DatabaseFixture _databaseFixture;
         private readonly IDbExecutor _db;
         private readonly LocalTransactionScope _transactionScope;
         public AmbientTransactionData AmbientTransactionData { get; }
 
         public TestFixture(DatabaseFixture databaseFixture)
         {
+            _databaseFixture = databaseFixture;
             _db = databaseFixture.Db;
-
+            
             _transactionScope = new LocalTransactionScope { SavepointExecutor = databaseFixture.SavepointExecutor };
-
+            
             AmbientTransactionData = AmbientTransactionData.Current;
         }
 
         public async Task InitializeAsync()
         {
             await _db.InsertAsync(new Client {Id = 1, Name = "Name1"});
+            
+            var clientService = _databaseFixture.Host.Services.GetRequiredService<IClientService>();
+
+            clientService.Create(new Client { Id = 1, Name = "Name1" });
         }
 
         public Task DisposeAsync() => Task.CompletedTask;
@@ -35,16 +41,16 @@ namespace SavepointHandlers.SqlServer.Tests
     [Collection(nameof(FixtureCollection))]
     public class Tests: IClassFixture<TestFixture>, IDisposable
     {
+        private readonly DatabaseFixture _databaseFixture;
         private readonly IDbExecutor _db;
         private readonly LocalTransactionScope _transactionScope;
         
         public Tests(TestFixture fixture,
             DatabaseFixture databaseFixture)
         {
+            _databaseFixture = databaseFixture;
             _db = databaseFixture.Db;
             
-            var clientService = databaseFixture.Host.Services.GetRequiredService<IClientService>();
-
             AmbientTransactionData.Current = fixture.AmbientTransactionData;
             
             _transactionScope = new LocalTransactionScope {SavepointExecutor = databaseFixture.SavepointExecutor};
@@ -81,6 +87,42 @@ namespace SavepointHandlers.SqlServer.Tests
             {
                 var name = await _db.QuerySingleAsync<string>("SELECT Name FROM Clients WHERE Id = @Id", new { Id = 1 });
                 Assert.Equal("Name3", name);
+            }
+        }
+
+        [Fact]
+        public void InMemory_UpdateToName2_Success()
+        {
+            var clientService = _databaseFixture.Host.Services.GetRequiredService<IClientService>();
+
+            {
+                var client = clientService.GetById(1);
+                Assert.Equal("Name1", client.Name);
+            }
+
+            clientService.Update(id: 1, new Client { Name = "Name2" });
+            
+            {
+                var client = clientService.GetById(1);
+                Assert.Equal("Name2", client.Name);
+            }
+        }
+
+        [Fact]
+        public void InMemory_UpdateToName3_Success()
+        {
+            var clientService = _databaseFixture.Host.Services.GetRequiredService<IClientService>();
+
+            {
+                var client = clientService.GetById(1);
+                Assert.Equal("Name1", client.Name);
+            }
+
+            clientService.Update(id: 1, new Client { Name = "Name3" });
+            
+            {
+                var client = clientService.GetById(1);
+                Assert.Equal("Name3", client.Name);
             }
         }
     }

@@ -23,6 +23,7 @@ namespace SavepointHandlers.SqlServer.Tests
             Sql.MappingCheckEnabled = true;
             ISqlAdapter.Current = new SqlServerAdapter();
             ISavepointAdapter.Current = new SqlServerSavepointAdapter();
+            ClientService.Subscribe();
             
             Db = new DbExecutor(ConnectionString);
             SavepointExecutor = new SavepointExecutor(ConnectionString);
