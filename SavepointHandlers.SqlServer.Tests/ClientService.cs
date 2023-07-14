@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 
@@ -7,22 +8,25 @@ namespace SavepointHandlers.SqlServer.Tests
     public class ClientService : IClientService
     {
         private static readonly AsyncLocal<TargetClientService> _current = new();
-        
+
         private static TargetClientService Current
         {
             get => _current.Value!;
             set => _current.Value = value;
         }
+
+        private static readonly TransactionObserver _transactionObserver = new();
         
+        private static readonly Func<Action> _ambientTransactionDataFunc = () =>
+        {
+            var current = Current;
+            return () => Current = current;
+        };
+
         public static void Subscribe()
         {
-            LocalTransactionScope.AddTransactionObserver(new TransactionObserver());
-            
-            AmbientTransactionData.Add(() =>
-            {
-                var current = Current;
-                return () => Current = current;
-            });
+            LocalTransactionScope.AddTransactionObserver(_transactionObserver);
+            AmbientTransactionData.Add(_ambientTransactionDataFunc);
         }
 
         private class TransactionObserver : ITransactionObserver
