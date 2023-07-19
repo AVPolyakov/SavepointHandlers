@@ -100,7 +100,7 @@ namespace SavepointHandlers.SqlServer.Tests
                 Assert.Equal("Name1", client.Name);
             }
 
-            clientService.Update(id: 1, new Client { Name = "Name2" });
+            clientService.Update(id: 1, x => x.Name = "Name2");
             
             {
                 var client = clientService.GetById(1);
@@ -118,7 +118,7 @@ namespace SavepointHandlers.SqlServer.Tests
                 Assert.Equal("Name1", client.Name);
             }
 
-            clientService.Update(id: 1, new Client { Name = "Name3" });
+            clientService.Update(id: 1, x => x.Name = "Name3");
             
             {
                 var client = clientService.GetById(1);

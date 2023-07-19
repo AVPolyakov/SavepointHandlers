@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 
 namespace SavepointHandlers.SqlServer.Tests
@@ -27,12 +28,12 @@ namespace SavepointHandlers.SqlServer.Tests
 
             public void OnSetSavepoint(string savepointName)
             {
-                Current.ClientDictionariesBySavepointName.Add(savepointName, ClientDictionary);
+                Current.ClientsBySavepointName.Add(savepointName, Clients);
             }
 
             public void OnRollbackToSavepoint(string savepointName)
             {
-                ClientDictionary = Current.ClientDictionariesBySavepointName[savepointName];
+                Clients = Current.ClientsBySavepointName[savepointName];
             }
         }
         
@@ -44,7 +45,7 @@ namespace SavepointHandlers.SqlServer.Tests
         
         private class Data
         {
-            public ImmutableDictionary<int, ClientTuple> ClientDictionary = ImmutableDictionary.Create<int, ClientTuple>();
+            public ImmutableList<ClientTuple> Clients = ImmutableList.Create<ClientTuple>();
 
             /// <summary>
             /// Используем обычный Dictionary (не ConcurrentDictionary) по следующей причине. Мы эмулируем в памяти работу с БД.
@@ -52,28 +53,34 @@ namespace SavepointHandlers.SqlServer.Tests
             /// На одном коннекшене нельзя выполнять запросы к БД в параллельном режиме. Поэтому и в нашем эмуляторе параллельный режим не нужен.
             /// При этом экземпляр сервиса Current хранится в AsyncLocal, поэтому экземпляр сервиса свой для каждого теста.
             /// </summary>
-            public readonly Dictionary<string, ImmutableDictionary<int, ClientTuple>> ClientDictionariesBySavepointName = new();
+            public readonly Dictionary<string, ImmutableList<ClientTuple>> ClientsBySavepointName = new();
         }
         
-        private static ImmutableDictionary<int, ClientTuple> ClientDictionary
+        private static ImmutableList<ClientTuple> Clients
         {
-            get => Current.ClientDictionary;
-            set => Current.ClientDictionary = value;
+            get => Current.Clients;
+            set => Current.Clients = value;
         }
         
         public void Create(Client client)
         {
-            ClientDictionary = ClientDictionary.Add(client.Id, ToClientTuple(client));
+            Clients = Clients.Add(ToClientTuple(client));
         }
-
-        public void Update(int id, Client client)
+        
+        public void Update(int id, Action<Client> action)
         {
-            ClientDictionary = ClientDictionary.Remove(id).Add(id, ToClientTuple(client));
+            var item = Clients.Select((value, index) => new {value, index}).FirstOrDefault(x => x.value.Id == id);
+            if (item != null)
+            {
+                var client = ToClient(item.value);
+                action(client);
+                Clients = Clients.RemoveAt(item.index).Add(ToClientTuple(client));
+            }
         }
 
         public Client GetById(int id)
         {
-            return ToClient(ClientDictionary[id]);
+            return ToClient(Clients.Find(tuple => tuple.Id == id)!);
         }
 
         private static ClientTuple ToClientTuple(Client client)
