@@ -7,16 +7,8 @@ namespace SavepointHandlers.SqlServer.Tests
 {
     public class ClientService : IClientService
     {
-        private static readonly AsyncLocal<TargetClientService> _current = new();
-
-        private static TargetClientService Current
-        {
-            get => _current.Value!;
-            set => _current.Value = value;
-        }
-
+        private static readonly AsyncLocal<Data> _current = new();
         private static readonly TransactionObserver _transactionObserver = new();
-        
         private static readonly Func<Action> _ambientTransactionDataFunc = () =>
         {
             var current = Current;
@@ -31,16 +23,28 @@ namespace SavepointHandlers.SqlServer.Tests
 
         private class TransactionObserver : ITransactionObserver
         {
-            public void OnBegin() => Current = new TargetClientService();
+            public void OnBegin() => Current = new Data();
 
-            public void OnSetSavepoint(string savepointName) => Current.OnSetSavepoint(savepointName);
+            public void OnSetSavepoint(string savepointName)
+            {
+                Current.ClientDictionariesBySavepointName.Add(savepointName, ClientDictionary);
+            }
 
-            public void OnRollbackToSavepoint(string savepointName) => Current.OnRollbackToSavepoint(savepointName);
+            public void OnRollbackToSavepoint(string savepointName)
+            {
+                ClientDictionary = Current.ClientDictionariesBySavepointName[savepointName];
+            }
         }
-
-        private class TargetClientService
+        
+        private static Data Current
         {
-            private ImmutableDictionary<int, ClientTuple> _clientTuples = ImmutableDictionary.Create<int, ClientTuple>();
+            get => _current.Value!;
+            set => _current.Value = value;
+        }
+        
+        private class Data
+        {
+            public ImmutableDictionary<int, ClientTuple> ClientDictionary = ImmutableDictionary.Create<int, ClientTuple>();
 
             /// <summary>
             /// Используем обычный Dictionary (не ConcurrentDictionary) по следующей причине. Мы эмулируем в памяти работу с БД.
@@ -48,56 +52,52 @@ namespace SavepointHandlers.SqlServer.Tests
             /// На одном коннекшене нельзя выполнять запросы к БД в параллельном режиме. Поэтому и в нашем эмуляторе параллельный режим не нужен.
             /// При этом экземпляр сервиса Current хранится в AsyncLocal, поэтому экземпляр сервиса свой для каждого теста.
             /// </summary>
-            private readonly Dictionary<string, ImmutableDictionary<int, ClientTuple>> _clientTuplesBySavepoint = new();
-
-            public void OnSetSavepoint(string savepointName)
-            {
-                _clientTuplesBySavepoint.Add(savepointName, _clientTuples);
-            }
-
-            public void OnRollbackToSavepoint(string savepointName)
-            {
-                _clientTuples = _clientTuplesBySavepoint[savepointName];
-            }
-            
-            public void Create(Client client)
-            {
-                _clientTuples = _clientTuples.Add(client.Id, ToClientTuple(client));
-            }
-            
-            public void Update(int id, Client client)
-            {
-                _clientTuples = _clientTuples.Remove(id).Add(id, ToClientTuple(client));
-            }
-            
-            public Client GetById(int id)
-            {
-                return ToClient(_clientTuples[id]);
-            }
-
-            private record ClientTuple(int Id, string? Name);
-            
-            private static ClientTuple ToClientTuple(Client client)
-            {
-                return new ClientTuple(
-                    Id: client.Id,
-                    Name: client.Name);
-            }
-
-            private static Client ToClient(ClientTuple clientTuple)
-            {
-                return new Client
-                {
-                    Id = clientTuple.Id,
-                    Name = clientTuple.Name
-                };
-            }
+            public readonly Dictionary<string, ImmutableDictionary<int, ClientTuple>> ClientDictionariesBySavepointName = new();
+        }
+        
+        private static ImmutableDictionary<int, ClientTuple> ClientDictionary
+        {
+            get => Current.ClientDictionary;
+            set => Current.ClientDictionary = value;
+        }
+        
+        public void Create(Client client)
+        {
+            ClientDictionary = ClientDictionary.Add(client.Id, ToClientTuple(client));
         }
 
-        public void Create(Client client) => Current.Create(client);
+        public void Update(int id, Client client)
+        {
+            ClientDictionary = ClientDictionary.Remove(id).Add(id, ToClientTuple(client));
+        }
 
-        public void Update(int id, Client client) => Current.Update(id, client);
+        public Client GetById(int id)
+        {
+            return ToClient(ClientDictionary[id]);
+        }
+
+        private static ClientTuple ToClientTuple(Client client)
+        {
+            return new ClientTuple
+            {
+                Id = client.Id,
+                Name = client.Name
+            };
+        }
+
+        private static Client ToClient(ClientTuple tuple)
+        {
+            return new Client
+            {
+                Id = tuple.Id,
+                Name = tuple.Name
+            };
+        }
         
-        public Client GetById(int id) => Current.GetById(id);
+        private class ClientTuple
+        {
+            public int Id { get; init; }
+            public string? Name { get; init; }
+        }
     }
 }
