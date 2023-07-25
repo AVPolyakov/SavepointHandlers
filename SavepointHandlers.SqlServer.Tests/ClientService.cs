@@ -45,7 +45,7 @@ namespace SavepointHandlers.SqlServer.Tests
         
         private class Data
         {
-            public ImmutableList<ClientTuple> Clients = ImmutableList.Create<ClientTuple>();
+            public ImmutableList<Client> Clients = ImmutableList.Create<Client>();
 
             /// <summary>
             /// Используем обычный Dictionary (не ConcurrentDictionary) по следующей причине. Мы эмулируем в памяти работу с БД.
@@ -53,10 +53,10 @@ namespace SavepointHandlers.SqlServer.Tests
             /// На одном коннекшене нельзя выполнять запросы к БД в параллельном режиме. Поэтому и в нашем эмуляторе параллельный режим не нужен.
             /// При этом экземпляр сервиса Current хранится в AsyncLocal, поэтому экземпляр сервиса свой для каждого теста.
             /// </summary>
-            public readonly Dictionary<string, ImmutableList<ClientTuple>> ClientsBySavepointName = new();
+            public readonly Dictionary<string, ImmutableList<Client>> ClientsBySavepointName = new();
         }
         
-        private static ImmutableList<ClientTuple> Clients
+        private static ImmutableList<Client> Clients
         {
             get => Current.Clients;
             set => Current.Clients = value;
@@ -64,7 +64,7 @@ namespace SavepointHandlers.SqlServer.Tests
         
         public void Create(Client client)
         {
-            Clients = Clients.Add(ToClientTuple(client));
+            Clients = Clients.Add(client.ShallowCopy());
         }
         
         public void Update(int id, Action<Client> action)
@@ -72,39 +72,15 @@ namespace SavepointHandlers.SqlServer.Tests
             var item = Clients.Select((value, index) => new {value, index}).FirstOrDefault(x => x.value.Id == id);
             if (item != null)
             {
-                var client = ToClient(item.value);
+                var client = item.value.ShallowCopy();
                 action(client);
-                Clients = Clients.RemoveAt(item.index).Add(ToClientTuple(client));
+                Clients = Clients.RemoveAt(item.index).Add(client.ShallowCopy());
             }
         }
 
         public Client GetById(int id)
         {
-            return ToClient(Clients.Find(tuple => tuple.Id == id)!);
-        }
-
-        private static ClientTuple ToClientTuple(Client client)
-        {
-            return new ClientTuple
-            {
-                Id = client.Id,
-                Name = client.Name
-            };
-        }
-
-        private static Client ToClient(ClientTuple tuple)
-        {
-            return new Client
-            {
-                Id = tuple.Id,
-                Name = tuple.Name
-            };
-        }
-        
-        private class ClientTuple
-        {
-            public int Id { get; init; }
-            public string? Name { get; init; }
+            return Clients.Find(tuple => tuple.Id == id)!.ShallowCopy();
         }
     }
 }
